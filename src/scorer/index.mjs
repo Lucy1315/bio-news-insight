@@ -27,14 +27,29 @@ function themeBonus(title, themeRules) {
   return bonus;
 }
 
+/**
+ * Strip the " - SourceName" suffix Google News RSS appends, collapse whitespace,
+ * remove quote marks, lowercase. Used to detect the same event reported by
+ * multiple outlets.
+ * @param {string} title
+ * @returns {string}
+ */
+export function normalizeTitle(title) {
+  return String(title ?? '')
+    .replace(/\s*[-–—]\s*[^-–—\n]{1,30}$/u, '')
+    .replace(/[\p{P}\p{S}]/gu, '')
+    .replace(/\s+/g, '')
+    .toLowerCase();
+}
+
 export function rank(articles, rules) {
   const now = rules.now ?? new Date();
-  const seen = new Set();
+  const seenUrl = new Set();
   const scored = [];
 
   for (const a of articles) {
-    if (seen.has(a.url)) continue;
-    seen.add(a.url);
+    if (seenUrl.has(a.url)) continue;
+    seenUrl.add(a.url);
 
     const age = ageHours(a.publishedAt, now);
     if (age > rules.freshness.maxAgeHours) continue;
@@ -52,6 +67,17 @@ export function rank(articles, rules) {
     });
   }
 
-  scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, rules.topN);
+  // Second pass: dedup by normalized title, keep highest-scoring variant
+  // so the same event reported by 3 outlets shows up once.
+  const byTitle = new Map();
+  for (const a of scored) {
+    const key = normalizeTitle(a.title);
+    if (!key) continue;
+    const existing = byTitle.get(key);
+    if (!existing || a.score > existing.score) byTitle.set(key, a);
+  }
+
+  const dedup = [...byTitle.values()];
+  dedup.sort((a, b) => b.score - a.score);
+  return dedup.slice(0, rules.topN);
 }

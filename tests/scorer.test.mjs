@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { rank } from '../src/scorer/index.mjs';
+import { rank, normalizeTitle } from '../src/scorer/index.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const articles = JSON.parse(fs.readFileSync(path.join(here, 'fixtures/articles.sample.json'), 'utf8'));
@@ -47,4 +47,24 @@ test('rank attaches scoreBreakdown', () => {
   const out = rank(articles, rules);
   assert.ok(out[0].scoreBreakdown);
   assert.equal(typeof out[0].score, 'number');
+});
+
+test('normalizeTitle strips suffix, punctuation, whitespace; lowercases', () => {
+  assert.equal(normalizeTitle('통풍치료제 임상 3상 투약 완료 - 히트뉴스'), '통풍치료제임상3상투약완료');
+  // Whitespace differences ("임상 3상" vs "임상3상") collapse to the same key
+  assert.equal(
+    normalizeTitle('JW중외제약, 신약 임상 3상 투약 완료 - 메디칼업저버'),
+    normalizeTitle('JW중외제약, 신약 임상3상 투약 완료 - 헬스미디어뉴스'),
+  );
+});
+
+test('rank deduplicates same event reported by multiple outlets, keeps highest score', () => {
+  const sameEvent = [
+    { title: '에파미뉴라드 임상 3상 투약 완료 - 히트뉴스', url: 'u-a', source: '히트뉴스', publishedAt: '2026-04-27T08:00:00Z', snippet: '', query: 'q' },
+    { title: '에파미뉴라드 임상 3상 투약 완료 - 메디칼업저버', url: 'u-b', source: '약업닷컴', publishedAt: '2026-04-27T08:00:00Z', snippet: '', query: 'q' },
+    { title: '에파미뉴라드 임상 3상 투약 완료 - 헬스미디어뉴스', url: 'u-c', source: '한국경제', publishedAt: '2026-04-27T08:00:00Z', snippet: '', query: 'q' },
+  ];
+  const out = rank(sameEvent, rules);
+  assert.equal(out.length, 1);
+  assert.equal(out[0].url, 'u-b');
 });

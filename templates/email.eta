@@ -4,42 +4,71 @@
 <meta charset="utf-8">
 <title>Bio Daily — <%= it.dateKST %></title>
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; color: #1a1a1a; }
-  h1 { font-size: 22px; margin-bottom: 4px; }
-  h2 { font-size: 16px; margin-top: 28px; border-bottom: 2px solid #eee; padding-bottom: 6px; }
-  .summary { background: #f7f7f8; padding: 16px; border-left: 4px solid #2c5282; white-space: pre-wrap; line-height: 1.6; }
-  .theme { margin: 16px 0; }
-  .theme h3 { margin: 0 0 4px; font-size: 14px; color: #2c5282; }
-  .article { padding: 12px 0; border-bottom: 1px solid #eee; }
-  .article-title a { color: #1a1a1a; text-decoration: none; font-weight: 600; }
-  .article-meta { color: #666; font-size: 12px; margin: 4px 0; }
-  .read-point { background: #fff8e1; padding: 8px 10px; border-radius: 4px; font-size: 13px; }
-  .footer { margin-top: 32px; color: #999; font-size: 11px; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", sans-serif; max-width: 720px; margin: 0 auto; padding: 24px 20px 40px; color: #1a1a1a; line-height: 1.55; }
+  .header { border-bottom: 3px solid #2c5282; padding-bottom: 12px; margin-bottom: 24px; }
+  .header h1 { font-size: 22px; margin: 0; }
+  .header .date { color: #555; font-size: 13px; margin-top: 4px; }
+  .section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #2c5282; text-transform: uppercase; margin: 28px 0 8px; }
+  .summary { background: #f4f7fb; padding: 16px 18px; border-left: 4px solid #2c5282; border-radius: 2px; }
+  .summary ol { margin: 0; padding-left: 18px; }
+  .summary ol li { margin: 6px 0; }
+  .themes { display: grid; gap: 10px; }
+  .theme { padding: 12px 14px; border: 1px solid #e3e6eb; border-radius: 6px; background: #fff; }
+  .theme-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+  .theme-title { font-weight: 700; color: #2c5282; font-size: 14px; }
+  .theme-refs { font-size: 11px; color: #888; }
+  .theme-refs a { color: #2c5282; text-decoration: none; margin-left: 4px; }
+  .theme-summary { font-size: 13px; color: #333; }
+  .article { padding: 14px 0; border-bottom: 1px solid #ececec; scroll-margin-top: 16px; }
+  .article-num { display: inline-block; min-width: 22px; color: #999; font-variant-numeric: tabular-nums; font-size: 12px; }
+  .article-title { font-weight: 600; }
+  .article-title a { color: #1a1a1a; text-decoration: none; }
+  .article-title a:hover { text-decoration: underline; }
+  .article-meta { color: #666; font-size: 12px; margin: 4px 0 8px 28px; }
+  .article-meta .src { color: #2c5282; font-weight: 500; }
+  .read-point { margin-left: 28px; padding: 10px 12px; background: #fffaeb; border-left: 3px solid #f5b945; border-radius: 2px; font-size: 13px; color: #333; }
+  .footer { margin-top: 36px; color: #999; font-size: 11px; text-align: center; }
 </style>
 </head>
 <body>
-  <h1>📧 Bio Daily — <%= it.dateKST %></h1>
+  <div class="header">
+    <h1>Bio Daily</h1>
+    <div class="date"><%= it.dateKST %></div>
+  </div>
 
-  <h2>Executive Summary</h2>
-  <div class="summary"><%= it.insights.executiveSummary %></div>
+  <div class="section-label">Executive Summary</div>
+  <div class="summary">
+    <% if (it.insights.executiveLines.length > 0) { %>
+      <ol>
+        <% it.insights.executiveLines.forEach(function(line) { %><li><%= line %></li><% }) %>
+      </ol>
+    <% } else { %>
+      <%= it.insights.executiveSummary %>
+    <% } %>
+  </div>
 
   <% if (it.insights.themes.length > 0) { %>
-    <h2>Themes</h2>
-    <% it.insights.themes.forEach(function(t) { %>
-      <div class="theme">
-        <h3><%= t.title %></h3>
-        <div><%= t.summary %></div>
-      </div>
-    <% }) %>
+    <div class="section-label">Themes</div>
+    <div class="themes">
+      <% it.insights.themes.forEach(function(t) { %>
+        <div class="theme">
+          <div class="theme-head">
+            <span class="theme-title"><%= t.title %></span>
+            <% if (t.refsHtml) { %><span class="theme-refs">관련: <%~ t.refsHtml %></span><% } %>
+          </div>
+          <div class="theme-summary"><%= t.summary %></div>
+        </div>
+      <% }) %>
+    </div>
   <% } %>
 
-  <h2>Top <%= it.articles.length %> Articles</h2>
+  <div class="section-label">Top <%= it.articles.length %> Articles</div>
   <% it.articles.forEach(function(a, i) { %>
-    <div class="article">
-      <div class="article-title"><a href="<%= a.url %>"><%= a.title %></a></div>
-      <div class="article-meta"><%= a.source %> · <%= a.publishedAt %></div>
+    <div class="article" id="article-<%= i %>">
+      <div class="article-title"><span class="article-num"><%= i + 1 %>.</span><a href="<%= a.url %>"><%= a.titleClean %></a></div>
+      <div class="article-meta"><span class="src"><%= a.source %></span> · <%= a.publishedDisplay %></div>
       <% if (it.insights.perArticle[i]) { %>
-        <div class="read-point">💡 <%= it.insights.perArticle[i].readPoint %></div>
+        <div class="read-point"><%= it.insights.perArticle[i].readPoint %></div>
       <% } %>
     </div>
   <% }) %>
