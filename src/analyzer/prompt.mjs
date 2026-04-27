@@ -1,7 +1,13 @@
+import { extractNumericFacts } from './numbers.mjs';
+
 export function buildPrompt(articles, competitors) {
-  const list = articles.map((a, i) =>
-    `[${i}] (${a.source}) ${a.title}\n    snippet: ${a.snippet}\n    url: ${a.url}`
-  ).join('\n\n');
+  const list = articles.map((a, i) => {
+    const facts = extractNumericFacts(`${a.title} ${a.snippet}`);
+    const factsLine = facts.length
+      ? `\n    facts: [${facts.join(', ')}]`
+      : '\n    facts: [없음 — 이 기사에는 인용 가능한 수치 없음]';
+    return `[${i}] (${a.source}) ${a.title}\n    snippet: ${a.snippet}${factsLine}\n    url: ${a.url}`;
+  }).join('\n\n');
 
   const compHint = competitors.length
     ? `한국 경쟁사 리스트(이들이 등장하면 한국 투자자/전략 관점 영향을 명시): ${competitors.join(', ')}.`
@@ -39,7 +45,7 @@ export function buildPrompt(articles, competitors) {
     '3. themes는 2~4개. 단일 기사 1:1 매핑은 묶음 가치가 없으므로 지양. 진짜로 묶을 사건이 적으면 themes를 줄이세요.',
     '4. 기사 제목을 그대로 베껴 쓰지 마세요. 제목에 없는 함의를 추가하지 못하면 그 자체가 신호 부족이므로 더 짧고 보수적으로 쓰세요.',
     '5. 사실을 모르면 추정 표현("~로 추정", "정확한 수치 미공개")으로 명시. 거짓 숫자 금지.',
-    '6. 입력 snippet/title에 없는 구체 수치(매출 %, 시장규모, 일정)를 임의로 만들어내지 마세요. 본문에 명시된 숫자만 인용 가능.',
+    '6. 각 기사 facts 필드에 등재된 수치만 readPoint/themes/executiveSummary에 인용할 수 있습니다. facts에 없는 숫자(시장규모, 성장률, 연도, 임상 단계, 거래액)는 절대 만들어내지 마세요. facts가 [없음 ...] 인 기사에 대해서는 readPoint에 어떤 수치도 쓰지 말고 정성적 시사점만 작성하세요.',
   ].join('\n');
 
   const user = [
