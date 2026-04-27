@@ -20,7 +20,7 @@ scrape → score → analyze → render → mail
 | 모듈 | 책임 | 외부 의존 |
 |---|---|---|
 | `src/config/` | `keywords.json` 로드, zod 검증 | fs |
-| `src/scraper/` | Google 뉴스 수집 | Playwright |
+| `src/scraper/` | Google News RSS 수집 | Node 내장 fetch |
 | `src/scorer/` | 점수화/dedup/Top N (순수) | 없음 |
 | `src/analyzer/` | OpenAI 인사이트 생성 | OpenAI API |
 | `src/renderer/` | Eta → HTML/text | eta |
@@ -75,7 +75,7 @@ npm run clean               # 30일 이전 output 정리 (수동)
 ## 변경 시 주의사항
 
 - **타입 변경:** `Article`, `ScoredArticle`, `Insights` 구조를 바꾸면 5개 모듈 전부 영향. spec 먼저 갱신.
-- **스크래퍼 셀렉터:** Google 뉴스 DOM 변경에 취약. `src/scraper/index.mjs`의 `page.evaluate` 안 셀렉터를 주기적으로 점검.
+- **스크래퍼 RSS 피드:** Google News RSS (`news.google.com/rss/search`) 사용. 피드 형식이 바뀌면 `src/scraper/parse.mjs`의 `parseRssItems` 정규식 점검. URL은 Google 리다이렉트 형태로 저장 (이메일 클라이언트가 따라감).
 - **AI 프롬프트:** `src/analyzer/prompt.mjs`만 수정. 응답 JSON 스키마 변경 시 `tryParseJson` 후 정규화 로직도 동기화.
 - **출력 양식:** `templates/email.eta` 수정. `--from-cache=insights` 옵션으로 비용 0으로 빠르게 이터레이션.
 
