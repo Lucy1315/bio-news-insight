@@ -1,0 +1,10 @@
+{
+  "executiveSummary": "오늘은 ADC와 비만치료제 임상 뉴스가 핵심.\n FDA 승인 1건 발표.\n M&A 1건 보고됨.",
+  "themes": [
+    { "title": "임상/승인", "summary": "FDA 승인 1건, 임상 3상 진입 1건", "articleIndices": [0, 1] }
+  ],
+  "perArticle": [
+    { "readPoint": "셀트리온의 글로벌 시장 확대 신호" },
+    { "readPoint": "ADC 분야의 임상 타임라인 가속" }
+  ]
+}
