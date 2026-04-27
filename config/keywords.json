@@ -16,6 +16,10 @@
     "조선비즈": 1.2,
     "약업닷컴": 1.5,
     "히트뉴스": 1.5,
+    "메디컬업저버": 1.4,
+    "메디파나뉴스": 1.4,
+    "라포르시안": 1.3,
+    "팜뉴스": 1.3,
     "Endpoints": 1.4,
     "STAT News": 1.4,
     "FierceBiotech": 1.3
@@ -28,7 +32,10 @@
   ],
   "feeds": [
     { "url": "https://www.hitnews.co.kr/rss/allArticle.xml", "source": "히트뉴스" },
-    { "url": "https://www.monews.co.kr/rss/allArticle.xml", "source": "메디컬업저버" }
+    { "url": "https://www.monews.co.kr/rss/allArticle.xml", "source": "메디컬업저버" },
+    { "url": "https://www.medipana.com/rss/allArticle.xml", "source": "메디파나뉴스" },
+    { "url": "https://www.rapportian.com/rss/allArticle.xml", "source": "라포르시안" },
+    { "url": "https://www.pharmnews.com/rss/allArticle.xml", "source": "팜뉴스" }
   ],
   "competitors": ["삼성바이오로직스", "셀트리온", "SK바이오팜", "한미약품", "유한양행"],
   "topN": 10,
