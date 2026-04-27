@@ -1,4 +1,6 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+dotenv.config(); // fallback to .env if .env.local not present
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadConfig } from '../src/config/index.mjs';
@@ -29,10 +31,19 @@ function writeJson(file, data) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const log = createLogger({ level: process.env.LOG_LEVEL ?? 'info', prefix: '[run-daily]' });
   const date = todayKST();
   const dir = dayDir();
   const logFile = path.join(logDir(), `daily-${date}.log`);
+  const fileStream = fs.createWriteStream(logFile, { flags: 'a' });
+  const log = createLogger({
+    level: process.env.LOG_LEVEL ?? 'info',
+    prefix: '[run-daily]',
+    sink: (lvl, msg) => {
+      const line = `[${new Date().toISOString()}] [${lvl}] [run-daily] ${msg}`;
+      fileStream.write(line + '\n');
+      (lvl === 'error' ? console.error : console.log)(line);
+    },
+  });
   log.info(`start date=${date} dryRun=${args.dryRun} fromCache=${args.fromCache ?? 'none'}`);
 
   const cfg = loadConfig();
