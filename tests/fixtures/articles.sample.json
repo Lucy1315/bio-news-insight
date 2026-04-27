@@ -1,0 +1,7 @@
+[
+  { "title": "셀트리온, FDA 승인 획득", "url": "https://a.example/1", "source": "한국경제", "publishedAt": "2026-04-27T08:00:00Z", "snippet": "셀트리온이 FDA 승인을 받았다", "query": "FDA 승인" },
+  { "title": "삼성바이오로직스 ADC 신규 임상 3상 진입", "url": "https://a.example/2", "source": "약업닷컴", "publishedAt": "2026-04-27T06:00:00Z", "snippet": "임상 3상 단계", "query": "임상 3상" },
+  { "title": "오래된 비만치료제 뉴스", "url": "https://a.example/3", "source": "조선비즈", "publishedAt": "2026-04-20T00:00:00Z", "snippet": "오래됨", "query": "비만치료제" },
+  { "title": "셀트리온 FDA 승인 획득", "url": "https://a.example/1", "source": "한국경제", "publishedAt": "2026-04-27T08:00:00Z", "snippet": "중복", "query": "셀트리온" },
+  { "title": "정말 오래된 기사", "url": "https://a.example/4", "source": "한국경제", "publishedAt": "2026-04-01T00:00:00Z", "snippet": "maxAge 초과", "query": "신약" }
+]
