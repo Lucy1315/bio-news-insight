@@ -5,6 +5,10 @@ import { projectRoot } from '../util/paths.mjs';
 
 export const ConfigSchema = z.object({
   searchQueries: z.array(z.string().min(1)).min(1),
+  feeds: z.array(z.object({
+    url: z.string().url(),
+    source: z.string().min(1),
+  })).default([]),
   sourceBoost: z.record(z.string(), z.number().positive()),
   themeRules: z.array(z.object({
     theme: z.string().min(1),

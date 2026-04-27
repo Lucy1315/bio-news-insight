@@ -3,7 +3,7 @@ import { parseRssItems, normalizeSource } from './parse.mjs';
 
 const log = createLogger({ level: process.env.LOG_LEVEL ?? 'info', prefix: '[scraper]' });
 
-const RSS_URL = (q) =>
+const GOOGLE_RSS_URL = (q) =>
   `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=ko&gl=KR&ceid=KR:ko`;
 
 const USER_AGENT =
@@ -27,22 +27,29 @@ async function fetchRss(url) {
 }
 
 function toIso(pubDate, fallback) {
-  const t = Date.parse(pubDate);
+  if (!pubDate) return fallback.toISOString();
+  // Some feeds use "YYYY-MM-DD HH:mm:ss" without timezone — assume KST (+09:00)
+  const m = pubDate.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})$/);
+  const t = m ? Date.parse(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}+09:00`) : Date.parse(pubDate);
   return isNaN(t) ? fallback.toISOString() : new Date(t).toISOString();
 }
 
 /**
+ * Match if any query token appears as substring in title or snippet.
+ * @param {{title: string, snippet: string}} a
  * @param {string[]} queries
- * @returns {Promise<import('../scorer/index.mjs').Article[]>}
  */
-export async function scrape(queries) {
+export function matchesQueries(a, queries) {
+  const hay = `${a.title} ${a.snippet}`;
+  return queries.some((q) => q.split(/\s+/).filter(Boolean).some((tok) => hay.includes(tok)));
+}
+
+async function scrapeGoogleNews(queries, now) {
   const articles = [];
   let successCount = 0;
-  const now = new Date();
-
   for (const q of queries) {
     try {
-      const xml = await fetchRss(RSS_URL(q));
+      const xml = await fetchRss(GOOGLE_RSS_URL(q));
       const items = parseRssItems(xml);
       for (const it of items) {
         articles.push({
@@ -55,17 +62,52 @@ export async function scrape(queries) {
         });
       }
       successCount++;
-      log.info(`query=${q} got=${items.length}`);
+      log.info(`google query=${q} got=${items.length}`);
     } catch (err) {
-      log.warn(`query=${q} failed: ${err.message}`);
+      log.warn(`google query=${q} failed: ${err.message}`);
     }
   }
+  return { articles, successCount, attemptCount: queries.length };
+}
 
-  if (successCount === 0 && queries.length > 0) {
-    const e = new Error('All scrape queries failed');
+async function scrapeFeed(feed, queries, now) {
+  try {
+    const xml = await fetchRss(feed.url);
+    const items = parseRssItems(xml);
+    const articles = items.map((it) => ({
+      title: it.title,
+      url: it.link,
+      source: feed.source,
+      publishedAt: toIso(it.pubDate, now),
+      snippet: it.description,
+      query: `feed:${feed.source}`,
+    })).filter((a) => matchesQueries(a, queries));
+    log.info(`feed ${feed.source} got=${items.length} kept=${articles.length}`);
+    return { articles, ok: true };
+  } catch (err) {
+    log.warn(`feed ${feed.source} failed: ${err.message}`);
+    return { articles: [], ok: false };
+  }
+}
+
+/**
+ * @param {string[]} queries
+ * @param {{url: string, source: string}[]} [feeds]
+ * @returns {Promise<import('../scorer/index.mjs').Article[]>}
+ */
+export async function scrape(queries, feeds = []) {
+  const now = new Date();
+  const google = await scrapeGoogleNews(queries, now);
+  const feedResults = await Promise.all(feeds.map((f) => scrapeFeed(f, queries, now)));
+
+  const totalSources = google.attemptCount + feeds.length;
+  const totalSuccess = google.successCount + feedResults.filter((r) => r.ok).length;
+
+  if (totalSources > 0 && totalSuccess === 0) {
+    const e = new Error('All scrape sources failed');
     e.exitCode = 1;
     throw e;
   }
 
-  return articles;
+  return [...google.articles, ...feedResults.flatMap((r) => r.articles)];
 }

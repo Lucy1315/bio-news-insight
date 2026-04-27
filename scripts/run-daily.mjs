@@ -54,7 +54,7 @@ async function main() {
     articles = readJson(articlesPath);
     log.info(`articles loaded from cache (${articles.length})`);
   } else {
-    articles = await scrape(cfg.searchQueries);
+    articles = await scrape(cfg.searchQueries, cfg.feeds);
     writeJson(articlesPath, articles);
     log.info(`articles scraped (${articles.length})`);
   }

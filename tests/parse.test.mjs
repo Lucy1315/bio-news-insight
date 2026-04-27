@@ -47,6 +47,16 @@ test('parseRssItems returns empty array for feed with no items', () => {
   assert.deepEqual(parseRssItems(empty), []);
 });
 
+test('parseRssItems handles outlet-direct RSS (no <source>, CDATA description, "YYYY-MM-DD HH:mm:ss" pubDate)', () => {
+  const mediaXml = fs.readFileSync(path.join(here, 'fixtures/media-rss-sample.xml'), 'utf8');
+  const items = parseRssItems(mediaXml);
+  assert.equal(items.length, 2);
+  assert.equal(items[0].source, ''); // no <source> tag — scraper supplies default
+  assert.match(items[0].link, /^https:\/\/www\.hitnews\.co\.kr\/news\//);
+  assert.match(items[0].description, /Ajax Therapeutics를 인수/);
+  assert.equal(items[0].pubDate, '2026-04-27 20:26:26');
+});
+
 test('normalizeSource returns trimmed value or "Unknown" when empty', () => {
   assert.equal(normalizeSource('약업닷컴'), '약업닷컴');
   assert.equal(normalizeSource('  헬스조선  '), '헬스조선');

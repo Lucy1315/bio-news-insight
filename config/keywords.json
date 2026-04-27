@@ -26,6 +26,10 @@
     { "theme": "신약/파이프라인", "keywords": ["신약", "파이프라인", "후보물질"] },
     { "theme": "규제/정책", "keywords": ["식약처", "보험급여", "규제"] }
   ],
+  "feeds": [
+    { "url": "https://www.hitnews.co.kr/rss/allArticle.xml", "source": "히트뉴스" },
+    { "url": "https://www.monews.co.kr/rss/allArticle.xml", "source": "메디컬업저버" }
+  ],
   "competitors": ["삼성바이오로직스", "셀트리온", "SK바이오팜", "한미약품", "유한양행"],
   "topN": 10,
   "freshness": { "halfLifeHours": 18, "maxAgeHours": 72 }
