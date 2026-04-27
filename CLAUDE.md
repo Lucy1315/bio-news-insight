@@ -40,6 +40,7 @@ scrape → score → analyze → render → mail
   - 종료 코드 0 = 정상, 1 = 일시 장애 (다음 날 자동 복구), 2 = 설정/환경 오류
   - 분석/메일 실패는 fallback 또는 재시도, 설정 오류는 fast-fail
 - **시크릿:** `OPENAI_API_KEY`, `SMTP_PASS`, `SMTP_USER`는 logger가 자동 마스킹. 로그·sent.json 어디에도 평문 노출 금지
+- **보안 (public repo):** GitHub 리포지토리(`Lucy1315/bio-news-insight`)는 **public**. `.env.local`/`output/`는 gitignore로 보호되지만, 시크릿을 채팅·이슈·커밋 메시지에 평문으로 붙여넣지 말 것. 실수로 노출됐다면 즉시 회수(rotate). 신규 키는 OpenAI 대시보드 → SMTP는 Gmail 앱 비밀번호로 발급
 
 ## 자주 쓰는 명령어
 

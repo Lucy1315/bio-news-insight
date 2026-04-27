@@ -11,12 +11,11 @@ Full design spec: [`../docs/superpowers/specs/2026-04-27-bio-news-design.md`](..
 npm install
 
 # 2. Copy env template and fill in your values
-cp .env.example .env
-# Edit .env: set OPENAI_API_KEY, SMTP_*, MAIL_TO, etc.
-
-# 3. (Optional) Install Chromium — only needed if system Chrome/Edge is missing
-npx playwright install chromium
+cp .env.example .env.local
+# Edit .env.local: set OPENAI_API_KEY, SMTP_*, MAIL_TO, etc.
 ```
+
+> Articles come from the public **Google News RSS** feed — no browser, no API key needed for the scrape stage. `.env.local` is gitignored; **never commit secrets** to this public repo.
 
 ## Running
 
